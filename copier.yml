@@ -1,0 +1,50 @@
+author_name:
+  type: str
+  help: "What is the author name?"
+
+plugin_name:
+  type: str
+  help: "What is your plugin name?"
+
+plugin_uuid:
+  type: str
+  help: What is the plugin UUID? (Usually this takes the form of 'com.author.plugin_name')
+  placeholder: "asdf"
+  default: com.{{ author_name | replace(" ", "") | lower() }}.{{ plugin_name | replace(" ", "") | lower() }}
+  when: "{{ author_name|length == 0 or plugin_name|length == 0 }}"
+
+plugin_description:
+  type: str
+  help: "Provide a quick description for this plugin."
+
+plugin_category:
+  type: str
+  help: "What category/folder do actions for this plugin fall under?"
+
+action_scripts_paths:
+  type: str
+  help: "What are the filepaths of the action scripts? (space-delimited; ex input: action1.py action2.py)"
+  default: plugin.py
+
+
+
+_tasks:
+  - echo "{{ _copier_conf.src_path }}"
+  # Loop through each path to create the necessary directories and files for the action_scripts_paths answer above, copying the _action.py file for each.
+  - |
+    {% for path in action_scripts_paths.split() -%}
+    mkdir -p "$(dirname {{ path }})" && cp {{ _copier_conf.src_path }}/_action.py {{ path }}
+    {% endfor %}
+
+
+_exclude:
+  - copier.yml
+  - .vscode
+  # The contents of this are essentially pushed into the new action files created in the above task.
+  - _action.py
+
+# Add some additional jinja template file suffixes, to work better with some IDE jinja extensions.
+_template_suffix:
+  - .jinja
+  - .jinja2
+  - .j2
