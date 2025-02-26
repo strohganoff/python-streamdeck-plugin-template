@@ -66,19 +66,18 @@ EXIT_CODE=$?
 log_echo "Dependencies installed. ${EXIT_CODE}"
 
 
-# Check if the plugin was packed with a debug flag file to enable debug mode
-DEBUG_OPTS=()
+# Run the command, and log the exit code.
+log_echo "Starting Plugin..."
+
+# Check if the plugin was packed with a debug flag file to enable debug mode, and if so, use it.
 if [[ -f "${SCRIPT_DIR}/.debug" ]]; then
-  DEBUG_PORT=$(cat .debug)
-  export DEBUG_OPTS=(--debug ${DEBUG_PORT})
+  DEBUG_PORT=$(cat "${SCRIPT_DIR}/.debug")
   log_echo "Debug mode enabled on port ${DEBUG_PORT}"
+  streamdeck --debug "$DEBUG_PORT" "$@" 2>&1 | tee -a "$LOG_FILE"
+else
+  streamdeck "$@" 2>&1 | tee -a "$LOG_FILE"
 fi
 
-# Run the command, and log the exit code.
-# log_echo "streamdeck command location: $(which streamdeck)"
-# log_echo "streamdeck installed? $(python -m pip list)"
-log_echo "Starting Plugin..."
-streamdeck "$@" 2>&1 | tee -a "$LOG_FILE"
 EXIT_CODE=$?
 log_echo "Finished main.py with error code: ${EXIT_CODE}"
 
